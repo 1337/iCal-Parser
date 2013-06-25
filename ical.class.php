@@ -1,5 +1,5 @@
 <?php
-    /*  iCal generator classes V1.01(CC 3.0, MIT) 2012 Brian Lai
+    /*  iCal generator classes V1.02(CC 3.0, MIT) 2013 Brian Lai
 
         Example usage:
             include_once('ical.class.php');
@@ -33,10 +33,10 @@
         public function setType($type) {
             // allow only defined component values
             static $allowed_types = array ('VCALENDAR', 'VEVENT', 'VTODO',
-                                            'VJOURNAL', 'VFREEBUSY',
-                                            'VTIMEZONE', 'VALARM', '/X-(.)+/i',
-                                            'iana-token');
-            if (preg_match($allowed_types, $type, )) {
+                                           'VJOURNAL', 'VFREEBUSY',
+                                           'VTIMEZONE', 'VALARM', '/X-(.)+/i',
+                                           'iana-token');
+            if (in_array($type, $allowed_types, true)) {
                 $this->props['type'] = $type;
             } else {
                 throw new Exception('Type ' . $type . ' is not allowed in specification');
@@ -239,7 +239,7 @@
             }
 
             // export children.
-            if (sizeof($this->props['children']) > 0) {
+            if (array_key_exists('children', $this->props) && sizeof($this->props['children']) > 0) {
                 foreach ($this->props['children'] as $child) {
                     // BEGIN: line does not have \r\n, so add it for the child
                     $buffer .= "\r\n" . $child->toString();
