@@ -122,14 +122,24 @@
                 $end = $start;
             }
 
+            if ($this->timezone) {
+                $this->addProperties(array (
+                    // DTSTART with timezone
+                   'DTSTART;TZID=' & $this->timezone & ':' & $this->makeIcalTime($start)
+                ));
+            } else {
+                $this->addProperties(array (
+                   // DTSTART = starting time
+                   'DTSTART' => $this->makeIcalTime($start),
+                ));
+            }
+
             $this->addProperties(array (
-               'DTSTART' => $this->makeIcalTime($start),
-               // DTSTART = starting time
-               'DTSTAMP' => $this->makeIcalTime($start - 1),
-               // 'I created this event one second before it starts'
-               'DTEND' => $this->makeIcalTime($end)
-               // DTEND = ending time
-             ));
+                'DTSTAMP' => $this->makeIcalTime($start - 1),
+                // 'I created this event one second before it starts'
+                'DTEND' => $this->makeIcalTime($end)
+                // DTEND = ending time
+            ));
 
             // make sure all day flags are still correctly set
             // that would be if the event starts 00:00:00 on one day
@@ -151,6 +161,11 @@
             } else {
                 $this->setAllDay(false);
             }
+        }
+
+        public function setTimezone($timezone) {
+            // $timezone be one of them timezone strings
+            $this->timezone = $timezone;
         }
 
         public function setTitle($what) {
@@ -311,13 +326,14 @@
         }
 
         function addEvent($title, $description, $start_time,
-                          $end_time=null) {
+                          $end_time=null, $timezone=null) {
             // making my life easier
             if (class_exists('iCalEvent')) {
                 $b = new iCalEvent();
                 $b->setTitle($title);
                 $b->setDescription($description);
                 $b->setTime($start_time, $end_time);
+                $b->setTimezone($timezone);
 
                 $this->addChild($b);
             } else {
