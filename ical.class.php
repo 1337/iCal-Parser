@@ -332,8 +332,8 @@
                 $b = new iCalEvent();
                 $b->setTitle($title);
                 $b->setDescription($description);
-                $b->setTime($start_time, $end_time);
                 $b->setTimezone($timezone);
+                $b->setTime($start_time, $end_time);
 
                 $this->addChild($b);
             } else {
