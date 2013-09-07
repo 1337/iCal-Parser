@@ -18,7 +18,8 @@
         // event, to-do, journal, or...
         // see 'Objects' in http://goo.gl/klqvs(as per RFC 2445 p.9)
 
-        protected $props = array ();
+        protected $props = array (),
+                  $timezone = null;
 
         public function __construct($type='VCALENDAR') {
             // set the type if you call it with one.
@@ -122,24 +123,25 @@
                 $end = $start;
             }
 
-            if ($this->timezone) {
+            if ($tz = $this->timezone or $tz = date_default_timezone_get()) {
                 $this->addProperties(array (
                     // DTSTART with timezone
-                   'DTSTART;TZID=' & $this->timezone & ':' & $this->makeIcalTime($start)
+                    'DTSTART;TZID=' . $tz => $this->makeIcalTime($start),
+                    // 'I created this event one second before it starts'
+                    'DTSTAMP;TZID=' . $tz => $this->makeIcalTime($start - 1),
+                    // DTEND = ending time
+                    'DTEND;TZID=' . $tz => $this->makeIcalTime($end)
                 ));
             } else {
                 $this->addProperties(array (
-                   // DTSTART = starting time
-                   'DTSTART' => $this->makeIcalTime($start),
+                    // DTSTART = starting time
+                    'DTSTART' => $this->makeIcalTime($start),
+                    // 'I created this event one second before it starts'
+                    'DTSTAMP' => $this->makeIcalTime($start - 1),
+                    // DTEND = ending time
+                    'DTEND' => $this->makeIcalTime($end)
                 ));
             }
-
-            $this->addProperties(array (
-                'DTSTAMP' => $this->makeIcalTime($start - 1),
-                // 'I created this event one second before it starts'
-                'DTEND' => $this->makeIcalTime($end)
-                // DTEND = ending time
-            ));
 
             // make sure all day flags are still correctly set
             // that would be if the event starts 00:00:00 on one day
@@ -248,6 +250,9 @@
             if (sizeof($this->props) > 0) {
                 foreach ($this->props as $key => $value) {
                     if (strtoupper($key) == $key) {
+                        if ($key === 'DTSTART') {// && $this->timezone !== null) {
+                            $key = $this->timezone;
+                        }
                         $buffer .= "\r\n" . $key . ':' . $value;
                     }
                 }
