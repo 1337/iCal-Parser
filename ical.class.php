@@ -349,7 +349,16 @@ class iCal extends iCalComponent {
         );
     }
 
-    function addEvent($title, $description, $start_time,
+    /**
+     * @returns {iCal}
+     */
+    public function parse($contents) {
+        // "I'll leave it to you as a take-home exercise" - Robert J. Le Roy
+        $this_class = get_class($this);
+        return new $this_class($contents);
+    }
+
+    public function addEvent($title, $description, $start_time,
                         $end_time=null, $timezone=null) {
         // making my life easier
         if (class_exists('iCalEvent')) {
