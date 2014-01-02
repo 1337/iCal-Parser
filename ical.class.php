@@ -1,19 +1,10 @@
 <?php
 
-/*  iCal generator classes V1.02(CC 3.0, MIT) 2013 Brian Lai
-
-    Example usage:
-        include_once('ical.class.php');
-        $a = new iCal();
-        $a->addEvent('title', 'description', time(), time());
-        die((string) $a);
-
-    Headers:
-        header('Content-type: text/calendar; charset=windows-1252');
-        header('Cache-Control: public');
-        header('Content-Description: File Transfer');
-        header('Content-Disposition: attachment; filename=cal.ics');
-*/
+/**
+ * iCal generator classes V1.11 (MIT) 2014 Brian Lai
+ *
+ * Check README.md for examples
+ */
 
 class iCalComponent {
     // event, to-do, journal, or...
@@ -211,7 +202,7 @@ class iCalComponent {
         // set an alarm for this event - so many days/hours/minutes/seconds in advance.
         // reminder text will be $text.
         // actually creates a VALARM object as a child of the current object.
-        $alarm = new iCalComponent('VAlARM');
+        $alarm = new iCalAlarm();
         $alarm->addProperties(array (
             'ACTION' => 'DISPLAY',
             'DESCRIPTION' => $text,
@@ -334,14 +325,15 @@ class iCal extends iCalComponent {
             array_change_key_case($props, CASE_UPPER),
             $this->props,
             array (
-                    // required defaults
-                    'PRODID' => '-//Google Inc//Google Calendar 70.9054//EN',
-                    // of course
-                    'X-PUBLISHED-TTL' => '1',
-                    // update interval, in some kind of format
-                    'CALSCALE' => 'GREGORIAN' /*,
-                'METHOD' => 'PUBLISH',
-                'X-WR-CALNAME' => 'Brians iCal Generator',
+                // required defaults
+                'PRODID' => '-//Google Inc//Google Calendar 70.9054//EN',
+                // of course
+                'X-PUBLISHED-TTL' => '1',
+                // update interval, in some kind of format
+                'CALSCALE' => 'GREGORIAN' /*,
+                'METHOD' => 'PUBLISH', */
+                'X-WR-CALNAME' => $props->name || 'Calendar',
+                'X-WR-TIMEZONE' => $props->timezone || 'Calendar' /*,
                 'CREATED' => $this->makeIcalTime(time() - 1),
                 'LAST-MODIFIED' => $this->makeIcalTime(time() - 1) */
             )
@@ -393,6 +385,93 @@ class iCalEvent extends iCalComponent {
     }
 }
 
+
+class iCalTimezone extends iCalComponent {
+    // so, VTIMEZONE.
+
+    /*
+    This is an example showing all the time zone rules for New York
+      City since April 30, 1967 at 03:00:00 EDT.
+
+       BEGIN:VTIMEZONE
+       TZID:America/New_York
+       LAST-MODIFIED:20050809T050000Z
+       BEGIN:DAYLIGHT
+       DTSTART:19670430T020000
+       RRULE:FREQ=YEARLY;BYMONTH=4;BYDAY=-1SU;UNTIL=19730429T070000Z
+       TZOFFSETFROM:-0500
+       TZOFFSETTO:-0400
+       TZNAME:EDT
+       END:DAYLIGHT
+       BEGIN:STANDARD
+       DTSTART:19671029T020000
+       RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU;UNTIL=20061029T060000Z
+       TZOFFSETFROM:-0400
+       TZOFFSETTO:-0500
+       TZNAME:EST
+       END:STANDARD
+       BEGIN:DAYLIGHT
+       DTSTART:19740106T020000
+       RDATE:19750223T020000
+       TZOFFSETFROM:-0500
+       TZOFFSETTO:-0400
+       TZNAME:EDT
+       END:DAYLIGHT
+       BEGIN:DAYLIGHT
+       DTSTART:19760425T020000
+       RRULE:FREQ=YEARLY;BYMONTH=4;BYDAY=-1SU;UNTIL=19860427T070000Z
+       TZOFFSETFROM:-0500
+       TZOFFSETTO:-0400
+       TZNAME:EDT
+       END:DAYLIGHT
+       BEGIN:DAYLIGHT
+       DTSTART:19870405T020000
+       RRULE:FREQ=YEARLY;BYMONTH=4;BYDAY=1SU;UNTIL=20060402T070000Z
+       TZOFFSETFROM:-0500
+       TZOFFSETTO:-0400
+       TZNAME:EDT
+       END:DAYLIGHT
+       BEGIN:DAYLIGHT
+       DTSTART:20070311T020000
+       RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=2SU
+       TZOFFSETFROM:-0500
+       TZOFFSETTO:-0400
+       TZNAME:EDT
+       END:DAYLIGHT
+       BEGIN:STANDARD
+       DTSTART:20071104T020000
+       RRULE:FREQ=YEARLY;BYMONTH=11;BYDAY=1SU
+       TZOFFSETFROM:-0400
+       TZOFFSETTO:-0500
+       TZNAME:EST
+       END:STANDARD
+       END:VTIMEZONE
+
+       Note that this is only
+       suitable for a recurring event that starts on or later than March
+       11, 2007 at 03:00:00 EDT (i.e., the earliest effective transition
+       date and time) and ends no later than March 9, 2008 at 01:59:59
+       EST
+    */
+
+    function __construct($props=null) {
+        // your object declaration has changed.
+        // supply optional properties here instead of the object type.
+        parent::__construct('VTIMEZONE');
+
+        if (!is_array($props)) {
+            $props = array (); // null needs to become array for later code
+        }
+
+        // build properties array
+        $this->props = array_merge(
+            array_change_key_case($props, CASE_UPPER),
+            $this->props
+        );
+    }
+}
+
+
 class iCalTodo extends iCalComponent {
     // so, VTODO.
 
@@ -412,6 +491,29 @@ class iCalTodo extends iCalComponent {
         );
     }
 }
+
+
+class iCalAlarm extends iCalComponent {
+    // so, VALARM.
+    // https://tools.ietf.org/html/rfc5545#section-3.6.6
+
+    function __construct($props=null) {
+        // your object declaration has changed.
+        // supply optional properties here instead of the object type.
+        parent::__construct('VALARM');
+
+        if (!is_array($props)) {
+            $props = array (); // null needs to become array for later code
+        }
+
+        // build properties array
+        $this->props = array_merge(
+            array_change_key_case($props, CASE_UPPER),
+            $this->props
+        );
+    }
+}
+
 
 class iCalJournal extends iCalComponent {
     // so, VJOURNAL.

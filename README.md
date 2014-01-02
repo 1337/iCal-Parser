@@ -1,6 +1,8 @@
 # PHP iCal Parser
 
-This project *parses* and *outputs* valid iCalendar files, as per [RFC 2445](http://www.ietf.org/rfc/rfc2445.txt).
+This project *parses* and *outputs* valid iCalendar files, as per 
+[RFC 2445](https://tools.ietf.org/html/rfc2445) (1998) and 
+[RFC 5545](https://tools.ietf.org/html/rfc5545) (2009).
 
 ## Versions
 
