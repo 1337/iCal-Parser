@@ -285,6 +285,10 @@ class iCalComponent {
         return $this->toString();
     }
 
+    public function toJSON() {
+        return json_encode($this->props);
+    }
+
     private function splitTime($time) {
         // given $time(made by time()), return an array of it
         return array (
