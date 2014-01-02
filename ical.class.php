@@ -6,6 +6,12 @@
  * Check README.md for examples
  */
 
+/**
+ * iCal "thing" base class
+ *
+ * Everything is a thing.
+ * Everything extends off iCalComponent.
+ */
 class iCalComponent {
     // event, to-do, journal, or...
     // see 'Objects' in http://goo.gl/klqvs(as per RFC 2445 p.9)
@@ -29,11 +35,13 @@ class iCalComponent {
                                         'VJOURNAL', 'VFREEBUSY',
                                         'VTIMEZONE', 'VALARM', '/X-(.)+/i',
                                         'iana-token');
-        if (in_array($type, $allowed_types, true)) {
-            $this->props['type'] = $type;
-        } else {
-            throw new Exception('Type ' . $type . ' is not allowed in specification');
+        $matches = array ();
+        foreach ($allowed_types as $allowed_type) {
+            if (preg_match($allowed_type, $type, $matches, true) > 0) {
+                return $this->props['type'] = $type;
+            }
         }
+        throw new Exception('Type ' . $type . ' is not allowed in specification');
     }
 
     public function addProperty($name, $value) {
@@ -305,6 +313,7 @@ class iCalComponent {
     }
 }
 
+
 class iCal extends iCalComponent {
     // so, VCALENDAR.
 
@@ -356,6 +365,7 @@ class iCal extends iCalComponent {
         }
     }
 }
+
 
 class iCalEvent extends iCalComponent {
     // so, VEVENT.
